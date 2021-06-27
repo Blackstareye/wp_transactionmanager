@@ -23,20 +23,32 @@ class TransactionManager
         // if you want to use a logger, just instantiate it here and uncommend the loggerlines
         //$this->logger = your_logger_handler;
     }
+    /**
+     *  resets the error
+     */
     public function resetError()
     {
         $this->error_state = false;
     }
+    /**
+     *  sets the modul into error state
+     */
     public function setError()
     {
         $this->error_state = true;
     }
+    /**
+     *  perform tasks that are need to be done if there was an error
+     */
     private function error()
     {
 
         // $this->logger->warning("Warning ErrorState not solved. Please refer to the log. Transaction aborted.");
         $this->error_count++;
     }
+    /**
+     *  start a transaction
+     */
     public  function beginTransaction()
     {
         if ($this->error_state) {
@@ -46,7 +58,6 @@ class TransactionManager
 
         global $wpdb;
         try {
-            //code...
             $wpdb->query('START TRANSACTION');
         } catch (\Throwable $e) {
             // $this->logger->warning("Database Transaction could not be established!", ["error" => $e]);
@@ -55,6 +66,11 @@ class TransactionManager
             throw $e;
         }
     }
+    
+    /**
+     *  @param $second_order don't use that on your own. It's for errors in a rollback
+     *  undo's queries
+     */
     public  function rollback($second_order = false)
     {
         if ($second_order) {
@@ -63,7 +79,6 @@ class TransactionManager
         }
         global $wpdb;
         try {
-            //code...
             $wpdb->query("ROLLBACK");
             // $this->logger->info("Rollback performed.");
         } catch (\Throwable $e) {
@@ -73,6 +88,9 @@ class TransactionManager
             throw $e;
         }
     }
+    /**
+     *  commits changes
+     */
     public  function commit()
     {
         global $wpdb;
@@ -89,11 +107,8 @@ class TransactionManager
     /**
      * data needs to be sanitized if use prepare is not used. Cannot use LIKE in prepare mode
      *
-     * @param  $type
-     * @param  $query_string
-     * @param array $data
-     * @param boolean $use_prepare
-     * @return void
+     * @param  $query_string needs %s or other placeholders in the query
+     * @param array $data  size(amount of placeholders of the query)
      */
     public  function performTransaction_use_prepare($query_string, array $data)
     {
@@ -114,12 +129,8 @@ class TransactionManager
     }
     /**
      * data needs to be sanitized 
-     *
-     * @param  $type
+     * executes the query in transaction mode
      * @param  $query_string
-     * @param array $data
-     * @param boolean $use_prepare
-     * @return void
      */
     public  function performTransaction_use_query($query_string)
     {
@@ -143,7 +154,6 @@ class TransactionManager
      * @param [type] $tablename
      * @param array $data
      * @param array $formats like %s for the values that will be inserted
-     * @return void
      */
     public  function performTransaction_insert($tablename, array $data, array $formats = null)
     {
@@ -175,7 +185,6 @@ class TransactionManager
      * @param array $where
      * @param array $formats like %s for the values that will be updated
      * @param array $where_formats like %s for the values that will be updated
-     * @return void
      */
     public  function performTransaction_update($tablename, array $data, array $where, array $formats = null, array $where_formats = null)
     {
@@ -211,10 +220,8 @@ class TransactionManager
      * 
      * performs a transaction based delete. 
      * @param [type] $tablename
-     * @param array $data
      * @param array $where
      * @param array $where_formats like %s for the values that will be deleted
-     * @return void
      */
     public  function performTransaction_delete($tablename, array $where, array $where_formats = null)
     {
@@ -243,7 +250,6 @@ class TransactionManager
      * this tests if transactions are possible
      * this needs to be done with a xDebug. It would be possible to do that with sql queries but this could be an IMPROVEMENT
      *
-     * @return void
      */
     public function testTransactionModule($test_table_name) {
         $this->beginTransaction();

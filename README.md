@@ -23,12 +23,13 @@
     <li>
       <a href="#getting-started">Getting Started</a>
     </li>
-    <li><a href="#usage">Usage</a></li>
+    <li><a href="#backstory">Backstory</a></li>
+    <li><a href="#methods">Methods</a></li>
     <li><a href="#roadmap">Roadmap</a></li>
     <li><a href="#contributing">Contributing</a></li>
     <li><a href="#license">License</a></li>
     <li><a href="#contact">Contact</a></li>
-    <li><a href="#acknowledgements">Acknowledgements</a></li>
+    <li><a href="#support">support</a></li>
   </ol>
 </details>
 
@@ -43,7 +44,7 @@ This PHP class will give you the ability to use
 * vanilla sql
 * prepared sql
 
-queries in a transaction based way. So you are able to manual rollback or commit your queries.
+queries in a transaction based way **in wordpress**. So you are able to manual rollback or commit your queries.
 
 I also implemented a rollback if there were any errors in the execution of the query.
 In this case, a rollback will be executed and an error state will be set.
@@ -91,12 +92,73 @@ Yeah my usecase  is an not so common thing todo in wordpress, but I needed it an
 
 ### Methods
 
+#### constructor
+
+If you have a logging handler (like Monolog) you can initialize it here and uncomment the logging lines in the code.
+
+#### resetError
+
+resets the error state.
+
+#### setError
+
+Sets the Manager in error state. Now it is not possible to perform any transaction based queries.
+
+#### error
+
+Increases the error count and (if set) writes an info into the logging file.
+
+#### beginTransaction
+
+This starts the transaction mode. Now every query is not directly commited.
+
+It uses the standard mysql **START TRANSACTION** command.
+
+#### rollback
+
+**Undo's** the queries that were run before between using begin transaction and  rollback.
+
+#### commit
+
+Makes your executed queries persistent.
+
+#### performTransaction_use_prepare
+
+Runs  an [prepared](https://developer.wordpress.org/reference/classes/wpdb/prepare//) SQL query. If it fails it rollbacks. And enables the error state.
+
+#### performTransaction_use_query
+
+Executes the query in transaction mode.
+If it fails it rollbacks. And enables the error state.
+
+#### performTransaction_insert
+
+Executes the [wp->insert](https://developer.wordpress.org/reference/classes/wpdb/insert/) in transaction mode.
+If it fails it rollbacks. And enables the error state.
+
+#### performTransaction_update
+
+Executes the [wp->update](https://developer.wordpress.org/reference/classes/wpdb/update/) in transaction mode.
+If it fails it rollbacks. And enables the error state.
+
+#### performTransaction_delete
+
+Executes the [wp->delete](https://developer.wordpress.org/reference/classes/wpdb/delete/) in transaction mode.
+If it fails it rollbacks. And enables the error state.
+
+#### testTransactionModule
+
+This tests if the transaction mode is possible with your underlying db.
+You have to use xDebug and your database client so you can monitor if everything runs well.
+
+Only after a commit, the data should be visible.
+Neither after a rollback nor before commiting.
+
 ## Roadmap
 
 * make the readme prettier
 * develop a wordpress plugin with filter-hooks for transaction handling.
 
-*
 See the [open issues](https://github.com/Blackstareye/wp_transactionmanager/issues) for a list of proposed features (and known issues).
 
 <!-- CONTRIBUTING -->
@@ -124,7 +186,7 @@ Blackeye - [@BlackeyeM](https://twitter.com/BlackeyeM) - private_blackeye+transa
 Project Link: [https://github.com/Blackstareye/wp_transactionmanager](https://github.com/Blackstareye/wp_transactionmanager)
 
 <!-- ACKNOWLEDGEMENTS -->
-## Support / Donation
+## Support
 
 If you like what I am doing, you can support me with a little Tip / Donation on those pages:
 
